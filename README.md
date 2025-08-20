@@ -47,6 +47,7 @@ java -jar filter.jar -p somePref- -b D:\Alex\test -a -f file1.txt file2.txt
 picocli
 
 Зависимость используемой библиотеки:
+
 `<dependency>
 
     <groupId>info.picocli</groupId>

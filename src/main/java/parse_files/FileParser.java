@@ -3,6 +3,7 @@ package parse_files;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -33,6 +34,10 @@ public class FileParser {
     private final StringBuilder statisticsBuilder;
 
     public FileParser(File[] files, String inputPath,String outputPath, String prefix) {
+        if (files == null) {
+            throw new RuntimeException("You need to specify at least one file to parse.\nPlease, try again");
+        }
+
         this.integerList = new ArrayList<>();
         this.floatList = new ArrayList<>();
         this.stringList = new ArrayList<>();
@@ -42,6 +47,10 @@ public class FileParser {
     }
 
     public FileParser(File[] files, String bothPath, String prefix) {
+        if (files == null) {
+            throw new RuntimeException("You need to specify at least one file to parse.\nPlease, try again");
+        }
+
         this.integerList = new ArrayList<>();
         this.floatList = new ArrayList<>();
         this.stringList = new ArrayList<>();
@@ -50,14 +59,14 @@ public class FileParser {
         initializeOutputFiles(bothPath, prefix);
     }
 
-    public void parseFiles(boolean append) throws IOException {
+    public void parseFiles(boolean append) {
         findAllLines(line -> line.matches(INTEGER_REGEX), files, integersFile, append);
         findAllLines(line -> line.matches(FLOAT_REGEX), files, floatsFile, append);
         findAllLines(line -> !line.matches(INTEGER_REGEX) &&
                 !line.matches(FLOAT_REGEX), files, stringsFile, append);
     }
 
-    public String getShortStatistics() throws IOException {
+    public String getShortStatistics() {
         addElementsToLists();
 
         statisticsBuilder.append("\n");
@@ -83,7 +92,7 @@ public class FileParser {
         return statisticsBuilder.append("\n").toString();
     }
 
-    public String getFullStatistics() throws IOException {
+    public String getFullStatistics() {
 
         statisticsBuilder.append(getShortStatistics());
 
@@ -163,20 +172,18 @@ public class FileParser {
         return filesWithPath;
     }
 
-    private void findAllLines(Predicate<String> predicate, File[] files, File outputFile, boolean append) throws IOException {
+    private void findAllLines(Predicate<String> predicate,
+                              File[] files,
+                              File outputFile,
+                              boolean append) {
         if (!outputFile.exists()) {
             for (File file : files) {
                 try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-                    String line;
-
-                    while ((line = bufferedReader.readLine()) != null) {
-                        if (predicate.test(line)) {
-                            try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile, true))) {
-                                bufferedWriter.write(line + "\n");
-                            }
-
-                        }
-                    }
+                    checkLine(predicate, bufferedReader, outputFile);
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(file + " is not found.\nProbably, you entered incorrect path.\nPlease, try again");
+                } catch (IOException e) {
+                    throw new RuntimeException("Error while finding lines from " + file + " to " + outputFile);
                 }
             }
         } else {
@@ -187,19 +194,44 @@ public class FileParser {
     private void findAllLinesIfFileExists(Predicate<String> predicate,
                                           File[] files,
                                           File outputFile,
-                                          boolean append) throws IOException {
+                                          boolean append) {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile, append))) {
             for (File file : files) {
-                try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-                    String line;
+                checkLineIfOutputFileExists(predicate, bufferedWriter, file);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error while writing to output file " + outputFile);
+        }
+    }
 
-                    while ((line = bufferedReader.readLine()) != null) {
-                        if (predicate.test(line)) {
-                            bufferedWriter.write(line + NEXT_LINE);
-                        }
-                    }
+    private void checkLine(Predicate<String> predicate,
+                           BufferedReader bufferedReader,
+                           File outputFile) throws IOException {
+        String line;
+
+        while ((line = bufferedReader.readLine()) != null) {
+            if (predicate.test(line)) {
+                try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile, true))) {
+                    bufferedWriter.write(line + "\n");
+                } catch (IOException e) {
+                    throw new RuntimeException("Problems with checking line " + line);
+                }
+
+            }
+        }
+    }
+
+    private void checkLineIfOutputFileExists(Predicate<String> predicate, BufferedWriter bufferedWriter, File file) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+            String line;
+
+            while ((line = bufferedReader.readLine()) != null) {
+                if (predicate.test(line)) {
+                    bufferedWriter.write(line + NEXT_LINE);
                 }
             }
+        } catch (IOException e) {
+            throw new RuntimeException("Error while reading file " + file);
         }
     }
 
@@ -215,7 +247,7 @@ public class FileParser {
         }
     }
 
-    private void addElementsToLists() throws IOException {
+    private void addElementsToLists() {
         if (integersFile.exists()) {
             addElementsToIntegerList();
         }
@@ -229,39 +261,45 @@ public class FileParser {
         }
     }
 
-    private void addElementsToIntegerList() throws IOException {
+    private void addElementsToIntegerList() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(integersFile))) {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
                 integerList.add(Integer.valueOf(line));
             }
+        } catch (IOException e) {
+            throw new RuntimeException("Error with converting lines from " + integersFile + " to list elements");
         }
     }
 
-    private void addElementsToFloatList() throws IOException {
+    private void addElementsToFloatList() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(floatsFile))) {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
                 floatList.add(Float.valueOf(line));
             }
+        } catch (IOException e) {
+            throw new RuntimeException("Error with converting lines from " + floatsFile + " to list elements");
         }
     }
 
-    private void addElementsToStringList() throws IOException {
+    private void addElementsToStringList() {
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(stringsFile))) {
             String line;
 
             while ((line = bufferedReader.readLine()) != null) {
                 stringList.add(line);
             }
+        } catch (IOException e) {
+            throw new RuntimeException("Error with converting lines from " + stringsFile + " to list elements");
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         File[] files = new File[]{new File("file1.txt"), new File("file2.txt")};
-        FileParser fileParser = new FileParser(files, "D:\\Alex\\test","D:\\Alex\\test\\output", null);
+        FileParser fileParser = new FileParser(files, "path", null);
         fileParser.parseFiles(false);
     }
 

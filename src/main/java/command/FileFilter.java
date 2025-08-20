@@ -4,7 +4,6 @@ import parse_files.FileParser;
 import picocli.CommandLine;
 
 import java.io.File;
-import java.io.IOException;
 
 import static picocli.CommandLine.Parameters;
 import static picocli.CommandLine.Command;
@@ -13,7 +12,8 @@ import static picocli.CommandLine.Option;
 
 class Main {
     public static void main(String[] args) {
-        int exitCode = new CommandLine(new FileFilter()).execute(args);
+        int exitCode = new CommandLine(new FileFilter())
+                .execute(args);
         System.exit(exitCode);
     }
 
@@ -54,6 +54,8 @@ class Main {
                  */
             }
 
+            try {
+
             FileParser fileParser;
 
             if (bothPath == null) {
@@ -62,17 +64,19 @@ class Main {
                 fileParser = new FileParser(files, bothPath, prefix);
             }
 
-            try {
                 fileParser.parseFiles(appendToExistingFiles);
+
+                System.out.println("\nFiles parsed successfully");
 
                 if (showShort) {
                     System.out.println(fileParser.getShortStatistics());
                 } else if (showFull) {
                     System.out.println(fileParser.getFullStatistics());
                 }
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
+            } catch (RuntimeException e) {
+                System.err.println("\n" + e.getMessage());
             }
+
         }
     }
 
