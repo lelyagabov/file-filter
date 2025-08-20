@@ -26,8 +26,14 @@ class Main {
         @Option(names = {"-p", "--prefix"}, description = "prefix for output files")
         String prefix;
 
+        @Option(names = {"-i", "--input"}, description = "path for input files")
+        String inputPath;
+
         @Option(names = {"-o", "--output"}, description = "path for output files")
-        String path;
+        String outputPath;
+
+        @Option(names = {"-b", "--both"}, description = "path for both input and output files")
+        String bothPath;
 
         @Option(names = {"-s", "--short"}, description = "show short statistics")
         boolean showShort;
@@ -47,7 +53,14 @@ class Main {
                  used in that case
                  */
             }
-            FileParser fileParser = new FileParser(files, path, prefix);
+
+            FileParser fileParser;
+
+            if (bothPath == null) {
+                fileParser = new FileParser(files, inputPath, outputPath, prefix);
+            } else {
+                fileParser = new FileParser(files, bothPath, prefix);
+            }
 
             try {
                 fileParser.parseFiles(appendToExistingFiles);

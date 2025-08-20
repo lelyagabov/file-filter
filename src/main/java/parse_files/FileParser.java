@@ -32,13 +32,22 @@ public class FileParser {
 
     private final StringBuilder statisticsBuilder;
 
-    public FileParser(File[] files, String path, String prefix) {
+    public FileParser(File[] files, String inputPath,String outputPath, String prefix) {
         this.integerList = new ArrayList<>();
         this.floatList = new ArrayList<>();
         this.stringList = new ArrayList<>();
-        this.files = getFilesWithPath(files, path);
+        this.files = getFilesWithPath(files, inputPath);
         this.statisticsBuilder = new StringBuilder();
-        initializeOutputFiles(path, prefix);
+        initializeOutputFiles(outputPath, prefix);
+    }
+
+    public FileParser(File[] files, String bothPath, String prefix) {
+        this.integerList = new ArrayList<>();
+        this.floatList = new ArrayList<>();
+        this.stringList = new ArrayList<>();
+        this.files = getFilesWithPath(files, bothPath);
+        this.statisticsBuilder = new StringBuilder();
+        initializeOutputFiles(bothPath, prefix);
     }
 
     public void parseFiles(boolean append) throws IOException {
@@ -252,7 +261,7 @@ public class FileParser {
 
     public static void main(String[] args) throws IOException {
         File[] files = new File[]{new File("file1.txt"), new File("file2.txt")};
-        FileParser fileParser = new FileParser(files, "D:\\Alex\\test", null);
+        FileParser fileParser = new FileParser(files, "D:\\Alex\\test","D:\\Alex\\test\\output", null);
         fileParser.parseFiles(false);
     }
 
