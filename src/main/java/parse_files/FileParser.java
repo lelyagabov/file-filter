@@ -21,6 +21,12 @@ public class FileParser {
     private static final String PATH_DELIMITER = "\\";
     private static final String NEXT_LINE = "\n";
 
+    private static final String FILES_NULL_ERROR = "You need to specify at least one file to parse.\nPlease, try again";
+
+    private static final String INTEGERS_FILE = "integers.txt";
+    private static final String FLOATS_FILE = "floats.txt";
+    private static final String STRINGS_FILE = "strings.txt";
+
     private final List<Integer> integerList;
     private final List<Float> floatList;
     private final List<String> stringList;
@@ -35,7 +41,7 @@ public class FileParser {
 
     public FileParser(File[] files, String inputPath,String outputPath, String prefix) {
         if (files == null) {
-            throw new RuntimeException("You need to specify at least one file to parse.\nPlease, try again");
+            throw new RuntimeException(FILES_NULL_ERROR);
         }
 
         this.integerList = new ArrayList<>();
@@ -48,7 +54,7 @@ public class FileParser {
 
     public FileParser(File[] files, String bothPath, String prefix) {
         if (files == null) {
-            throw new RuntimeException("You need to specify at least one file to parse.\nPlease, try again");
+            throw new RuntimeException(FILES_NULL_ERROR);
         }
 
         this.integerList = new ArrayList<>();
@@ -69,27 +75,27 @@ public class FileParser {
     public String getShortStatistics() {
         addElementsToLists();
 
-        statisticsBuilder.append("\n");
+        statisticsBuilder.append(NEXT_LINE);
 
         if (!integerList.isEmpty()) {
             statisticsBuilder.append("Integers count: ")
                     .append(integerList.size())
-                    .append("\n");
+                    .append(NEXT_LINE);
         }
 
         if (!floatList.isEmpty()) {
             statisticsBuilder.append("Floats count: ")
                     .append(floatList.size())
-                    .append("\n");
+                    .append(NEXT_LINE);
         }
 
         if (!stringList.isEmpty()) {
             statisticsBuilder.append("Strings count: ")
                     .append(stringList.size())
-                    .append("\n");
+                    .append(NEXT_LINE);
         }
 
-        return statisticsBuilder.append("\n").toString();
+        return statisticsBuilder.append(NEXT_LINE).toString();
     }
 
     public String getFullStatistics() {
@@ -212,11 +218,10 @@ public class FileParser {
         while ((line = bufferedReader.readLine()) != null) {
             if (predicate.test(line)) {
                 try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFile, true))) {
-                    bufferedWriter.write(line + "\n");
+                    bufferedWriter.write(line + NEXT_LINE);
                 } catch (IOException e) {
                     throw new RuntimeException("Problems with checking line " + line);
                 }
-
             }
         }
     }
@@ -236,14 +241,14 @@ public class FileParser {
     }
 
     private void initializeOutputFiles(String path, String prefix) {
-        if (prefix != null && !prefix.isBlank()) {
-            this.integersFile = new File(path + PATH_DELIMITER + prefix + "integers.txt");
-            this.floatsFile = new File(path + PATH_DELIMITER + prefix + "floats.txt");
-            this.stringsFile = new File(path + PATH_DELIMITER + prefix + "strings.txt");
+        if (prefix != null) {
+            this.integersFile = new File(path + PATH_DELIMITER + prefix + INTEGERS_FILE);
+            this.floatsFile = new File(path + PATH_DELIMITER + prefix + FLOATS_FILE);
+            this.stringsFile = new File(path + PATH_DELIMITER + prefix + STRINGS_FILE);
         } else {
-            this.integersFile = new File(path + PATH_DELIMITER + "integers.txt");
-            this.floatsFile = new File(path + PATH_DELIMITER + "floats.txt");
-            this.stringsFile = new File(path + PATH_DELIMITER + "strings.txt");
+            this.integersFile = new File(path + PATH_DELIMITER + INTEGERS_FILE);
+            this.floatsFile = new File(path + PATH_DELIMITER + FLOATS_FILE);
+            this.stringsFile = new File(path + PATH_DELIMITER + STRINGS_FILE);
         }
     }
 
@@ -295,12 +300,6 @@ public class FileParser {
         } catch (IOException e) {
             throw new RuntimeException("Error with converting lines from " + stringsFile + " to list elements");
         }
-    }
-
-    public static void main(String[] args) {
-        File[] files = new File[]{new File("file1.txt"), new File("file2.txt")};
-        FileParser fileParser = new FileParser(files, "path", null);
-        fileParser.parseFiles(false);
     }
 
 }
